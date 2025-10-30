@@ -4,19 +4,37 @@ const router = express.Router();
 const { poolPromise,sql } = require("../db");
 
 router.get("/", async (req, res) => {
- try {
-   const pool = await poolPromise;
-   const result = await pool.request().query(`
-     SELECT service_id, service_name
-     FROM  CTI_services
-     ORDER BY service_name ASC
-   `);
-   res.json(result.recordset);
- } catch (error) {
-   console.error("Error fetching services:", error);
-   res.status(500).json({ message: "Error fetching services" });
- }
+  try {
+    console.log("📞 API called: /api/service-admin");
+    console.log("⏳ Waiting for database connection...");
+    
+    const pool = await poolPromise;
+    
+    if (!pool) {
+      throw new Error("Database pool is null or undefined");
+    }
+    
+    console.log("✅ Pool obtained, executing query...");
+    
+    const result = await pool.request().query(`
+      SELECT service_id, service_name
+      FROM CTI_services
+      ORDER BY service_name ASC
+    `);
+    
+    console.log("✅ Query successful, rows:", result.recordset.length);
+    res.json(result.recordset);
+  } catch (error) {
+    console.error("❌ Error in /api/service-admin:", error);
+    console.error("Error stack:", error.stack);
+    res.status(500).json({ 
+      message: "Error fetching services",
+      error: error.message,
+      code: error.code
+    });
+  }
 });
+
 
 router.get("/:id", async(req, res) => {
     try {
