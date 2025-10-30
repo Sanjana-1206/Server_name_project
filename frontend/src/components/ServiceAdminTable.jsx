@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
 
+// API Base URL - Vercel deployment URL
+
+const API_BASE_URL = "https://server-name-project-elkd-fsm5ybin2-sanjana-sahinis-projects.vercel.app";
+
 function ServiceAdminTable() {
 
   const [data, setData] = useState([]);
@@ -22,7 +26,9 @@ function ServiceAdminTable() {
 
   const fetchServiceNames = () => {
 
-    fetch("http://localhost:5000/api/service-admin")
+    // ✅ Changed: localhost to Vercel URL
+
+    fetch(`${API_BASE_URL}/api/service-admin`)
 
       .then((res) => res.json())
 
@@ -44,7 +50,9 @@ function ServiceAdminTable() {
 
     setError(null);
 
-    fetch(`http://localhost:5000/api/service-admin/${id}`)
+    // ✅ Changed: localhost to Vercel URL
+
+    fetch(`${API_BASE_URL}/api/service-admin/${id}`)
 
       .then((res) => {
 
@@ -118,7 +126,7 @@ function ServiceAdminTable() {
 
     setEditingRowId(row.service_id);
 
-    setEditedData({ ...row }); // Make a copy of the row data for editing
+    setEditedData({ ...row });
 
   };
 
@@ -150,7 +158,9 @@ function ServiceAdminTable() {
 
     try {
 
-      const response = await fetch(`http://localhost:5000/api/service-admin/${id}`, {
+      // ✅ Changed: localhost to Vercel URL
+
+      const response = await fetch(`${API_BASE_URL}/api/service-admin/${id}`, {
 
         method: 'PUT',
 
@@ -191,7 +201,6 @@ function ServiceAdminTable() {
     }
 
   };
-
 
   return (
 <div className="service-admin-container">
@@ -277,8 +286,6 @@ function ServiceAdminTable() {
 <tr key={d.service_id} className="service-admin-row">
 
                   {editingRowId === d.service_id ? (
-
-                    // 🔹 EDITING MODE ROW
 <>
 <td className="service-admin-td">
 <button onClick={() => handleSaveClick(d.service_id)} className="service-admin-save-button">Save</button>
@@ -301,8 +308,6 @@ function ServiceAdminTable() {
 </>
 
                   ) : (
-
-                    // 🔹 VIEW MODE ROW
 <>
 <td className="service-admin-td">
 <button onClick={() => handleEditClick(d)} className="service-admin-edit-button">Edit</button>
