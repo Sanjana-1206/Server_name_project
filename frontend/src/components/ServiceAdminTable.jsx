@@ -1,263 +1,254 @@
 import { useEffect, useState } from "react";
-
-// API Base URL - Vercel deployment URL
-
-const API_BASE_URL = "https://server-name-project-elkd-fsm5ybin2-sanjana-sahinis-projects.vercel.app";
-
+ 
 function ServiceAdminTable() {
-
+ 
   const [data, setData] = useState([]);
-
+ 
   const [loading, setLoading] = useState(false);
-
+ 
   const [error, setError] = useState(null);
-
+ 
   const [serviceId, setServiceId] = useState("15");
-
+ 
   const [searchInput, setSearchInput] = useState("15");
-
+ 
   const [serviceList, setServiceList] = useState([]);
-
+ 
   // 🔹 State for inline editing
-
+ 
   const [editingRowId, setEditingRowId] = useState(null);
-
+ 
   const [editedData, setEditedData] = useState({});
-
+ 
   const fetchServiceNames = () => {
-
-    // ✅ Changed: localhost to Vercel URL
-
-    fetch(`${API_BASE_URL}/api/service-admin`)
-
+ 
+    fetch("http://localhost:5000/api/service-admin")
+ 
       .then((res) => res.json())
-
+ 
       .then((data) => {
-
+ 
         if (Array.isArray(data)) setServiceList(data);
-
+ 
       })
-
+ 
       .catch((err) => console.error("Error fetching service list:", err));
-
+ 
   };
-
+ 
   const fetchServiceData = (id) => {
-
+ 
     if (!id) return;
-
+ 
     setLoading(true);
-
+ 
     setError(null);
-
-    // ✅ Changed: localhost to Vercel URL
-
-    fetch(`${API_BASE_URL}/api/service-admin/${id}`)
-
+ 
+    fetch(`http://localhost:5000/api/service-admin/${id}`)
+ 
       .then((res) => {
-
+ 
         if (!res.ok) throw new Error("Service not found or server error");
-
+ 
         return res.json();
-
+ 
       })
-
+ 
       .then((data) => {
-
+ 
         if (Array.isArray(data)) setData(data);
-
+ 
         else setData([]);
-
+ 
         setLoading(false);
-
+ 
       })
-
+ 
       .catch((err) => {
-
+ 
         console.error(err);
-
+ 
         setError(err.message);
-
+ 
         setData([]);
-
+ 
         setLoading(false);
-
+ 
       });
-
+ 
   };
-
+ 
   useEffect(() => {
-
+ 
     fetchServiceNames();
-
+ 
     fetchServiceData(serviceId);
-
+ 
   }, [serviceId]);
-
+ 
   const handleSearch = () => {
-
+ 
     if (searchInput.trim()) {
-
+ 
       setServiceId(searchInput.trim());
-
+ 
     }
-
+ 
   };
-
+ 
   const handleKeyPress = (e) => {
-
+ 
     if (e.key === "Enter") handleSearch();
-
+ 
   };
-
+ 
   const handleSelectChange = (e) => {
-
+ 
     const selectedId = e.target.value;
-
+ 
     setServiceId(selectedId);
-
+ 
     setSearchInput(selectedId);
-
+ 
   };
-
+ 
   // 🔹 Handlers for EDITING actions
-
+ 
   const handleEditClick = (row) => {
-
+ 
     setEditingRowId(row.service_id);
-
-    setEditedData({ ...row });
-
+ 
+    setEditedData({ ...row }); // Make a copy of the row data for editing
+ 
   };
-
+ 
   const handleCancelClick = () => {
-
+ 
     setEditingRowId(null);
-
+ 
     setEditedData({});
-
+ 
   };
-
+ 
   const handleEditChange = (e) => {
-
+ 
     const { name, value } = e.target;
-
+ 
     setEditedData((prevData) => ({
-
+ 
       ...prevData,
-
+ 
       [name]: value,
-
+ 
     }));
-
+ 
   };
-
+ 
   const handleSaveClick = async (id) => {
-
+ 
     setError(null);
-
+ 
     try {
-
-      // ✅ Changed: localhost to Vercel URL
-
-      const response = await fetch(`${API_BASE_URL}/api/service-admin/${id}`, {
-
+ 
+      const response = await fetch(`http://localhost:5000/api/service-admin/${id}`, {
+ 
         method: 'PUT',
-
+ 
         headers: {
-
+ 
           'Content-Type': 'application/json',
-
+ 
         },
-
+ 
         body: JSON.stringify(editedData),
-
+ 
       });
-
+ 
       if (!response.ok) {
-
+ 
         throw new Error("Failed to save data. Please check the console.");
-
+ 
       }
-
+ 
       // Update the main data state to reflect changes immediately
-
+ 
       const updatedData = data.map(row => (row.service_id === id ? editedData : row));
-
+ 
       setData(updatedData);
-
+ 
       // Exit editing mode
-
+ 
       setEditingRowId(null);
-
+ 
       setEditedData({});
-
+ 
     } catch (err) {
-
+ 
       console.error("Save Error:", err);
-
+ 
       setError(err.message);
-
+ 
     }
-
+ 
   };
-
+ 
+ 
   return (
 <div className="service-admin-container">
 <div className="service-admin-header">
 <h1 className="service-admin-title">Service Admin Details</h1>
 <div className="service-admin-search-box">
 <select
-
+ 
             className="service-admin-search-input"
-
+ 
             value={serviceId}
-
+ 
             onChange={handleSelectChange}
 >
 <option value="">Select Service Name</option>
-
+ 
             {serviceList.map((s) => (
 <option key={s.service_id} value={s.service_id}>
-
+ 
                 {s.service_name}
 </option>
-
+ 
             ))}
 </select>
 <input
-
+ 
             type="number"
-
+ 
             value={searchInput}
-
+ 
             onChange={(e) => setSearchInput(e.target.value)}
-
+ 
             onKeyPress={handleKeyPress}
-
+ 
             placeholder="Enter Service ID..."
-
+ 
             className="service-admin-search-input"
-
+ 
             min="1"
-
+ 
           />
 <button onClick={handleSearch} className="service-admin-search-button">
-
+ 
             Search
 </button>
 </div>
 </div>
-
+ 
       {loading && <div className="service-admin-loading-container">...</div>}
-
+ 
       {error && <div className="service-admin-error-container"><p>⚠️ {error}</p></div>}
-
+ 
       {!loading && !error && data.length === 0 && (
 <div className="service-admin-no-data-container"><p>No service found for ID: {serviceId}</p></div>
-
+ 
       )}
-
+ 
       {!loading && !error && data.length > 0 && (
 <div className="service-admin-table-container">
 <table className="service-admin-table">
@@ -281,11 +272,13 @@ function ServiceAdminTable() {
 </tr>
 </thead>
 <tbody>
-
+ 
               {data.map((d) => (
 <tr key={d.service_id} className="service-admin-row">
-
+ 
                   {editingRowId === d.service_id ? (
+ 
+                    // 🔹 EDITING MODE ROW
 <>
 <td className="service-admin-td">
 <button onClick={() => handleSaveClick(d.service_id)} className="service-admin-save-button">Save</button>
@@ -306,8 +299,10 @@ function ServiceAdminTable() {
 <td className="service-admin-td"><input type="text" name="service_database_name" value={editedData.service_database_name || ''} onChange={handleEditChange} /></td>
 <td className="service-admin-td"><input type="text" name="service_sip_server" value={editedData.service_sip_server || ''} onChange={handleEditChange} /></td>
 </>
-
+ 
                   ) : (
+ 
+                    // 🔹 VIEW MODE ROW
 <>
 <td className="service-admin-td">
 <button onClick={() => handleEditClick(d)} className="service-admin-edit-button">Edit</button>
@@ -327,21 +322,20 @@ function ServiceAdminTable() {
 <td className="service-admin-td">{d.service_database_name}</td>
 <td className="service-admin-td">{d.service_sip_server}</td>
 </>
-
+ 
                   )}
 </tr>
-
+ 
               ))}
 </tbody>
 </table>
 </div>
-
+ 
       )}
 </div>
-
-  );
-
-}
-
-export default ServiceAdminTable;
  
+  );
+ 
+}
+ 
+export default ServiceAdminTable;
